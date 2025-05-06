@@ -249,6 +249,46 @@ public class UserController {
 
 ---
 
+## Appendix E: Sample Spring Cloud Gateway Code
+
+### GatewayApplication.java
+
+```java
+@SpringBootApplication
+public class GatewayApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(GatewayApplication.class, args);
+  }
+}
+```
+
+### KeycloakAuthGatewayFilter.java
+
+````java
+@Component
+public class KeycloakAuthGatewayFilter implements GatewayFilter, Ordered {
+
+  @Override
+  public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+      return exchange.getResponse().setComplete();
+    }
+
+    // In real usage, validate the JWT here
+    return chain.filter(exchange);
+  }
+
+  @Override
+  public int getOrder() {
+    return -1; // Ensure it's applied early
+  }
+}
+
+---
+
 ## Appendix D: Docker Compose for Local Testing
 
 This appendix provides a comprehensive setup using Docker Compose to run all key services locally: Consul for service discovery, Keycloak for identity and access management, a mock user-service for backend simulation, and Spring Cloud Gateway for API routing and load balancing. This environment closely mimics production components and supports efficient development and testing cycles.
@@ -304,7 +344,7 @@ services:
 networks:
   backend:
     driver: bridge
-```
+````
 
 ### Directory Layout:
 
